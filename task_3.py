@@ -1,4 +1,5 @@
 import timeit
+import csv
 from typing import List
 
 # Knuth-Morris-Pratt algorithm (KMP)
@@ -80,36 +81,30 @@ existing_substring = "якщо середній елемент – цільов�
 non_existing_substring = "якщо СУРЕДНІй елемент – цільовий елемент" 
 
 # Time measurement
-algorithms = {"KMP": kmp_search, "BM": bm_search, "RK": rk_search}
-results = {}
+results = []
+articles = {"Article 1": text1, "Article 2": text2}
+patterns = {"Existing": existing_substring, "Non-Existing": non_existing_substring}
+algorithms = {"Boyer-Moore": bm_search, "Knuth-Morris-Pratt": kmp_search, "Rabin-Karp": rk_search}
 
-results = {
-    "Article 1": {
-        "Existing": {
-            "Boyer-Moore": timeit.timeit(lambda: bm_search(text1, existing_substring), number=10),
-            "Knuth-Morris-Pratt": timeit.timeit(lambda: kmp_search(text1, existing_substring), number=10),
-            "Rabin-Karp": timeit.timeit(lambda: rk_search(text1, existing_substring), number=10),
-        },
-        "Non-Existing": {
-            "Boyer-Moore": timeit.timeit(lambda: bm_search(text1, non_existing_substring), number=10),
-            "Knuth-Morris-Pratt": timeit.timeit(lambda: kmp_search(text1, non_existing_substring), number=10),
-            "Rabin-Karp": timeit.timeit(lambda: rk_search(text1, non_existing_substring), number=10),
-        },
-    },
-    "Article 2": {
-        "Existing": {
-            "Boyer-Moore": timeit.timeit(lambda: bm_search(text2, existing_substring), number=10),
-            "Knuth-Morris-Pratt": timeit.timeit(lambda: kmp_search(text2, existing_substring), number=10),
-            "Rabin-Karp": timeit.timeit(lambda: rk_search(text2, existing_substring), number=10),
-        },
-        "Non-Existing": {
-            "Boyer-Moore": timeit.timeit(lambda: bm_search(text2, non_existing_substring), number=10),
-            "Knuth-Morris-Pratt": timeit.timeit(lambda: kmp_search(text2, non_existing_substring), number=10),
-            "Rabin-Karp": timeit.timeit(lambda: rk_search(text2, non_existing_substring), number=10),
-        },
-    },
-}
+for article_name, text in articles.items():
+    for pattern_type, pattern in patterns.items():
+        for algo_name, algo in algorithms.items():
+            time_taken = timeit.timeit(lambda: algo(text, pattern), number=10)
+            results.append([article_name, pattern_type, algo_name, time_taken])
 
-# Output of results
-print(results)
+# Write results to CSV
+with open("results.csv", "w", newline="", encoding="utf-8") as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(["Article", "Pattern Type", "Algorithm", "Time (s)"])
+    writer.writerows(results)
 
+# Write results to Markdown
+with open("results.md", "w", encoding="utf-8") as mdfile:
+    mdfile.write("# Comparison of substring search algorithms\n\n")
+    mdfile.write("| Article | Pattern Type | Algorithm | Time (s) |\n")
+    mdfile.write("|--------|-------------|----------|---------|\n")
+    for row in results:
+        mdfile.write(f"| {row[0]} | {row[1]} | {row[2]} | {row[3]:.6f} |\n")
+
+
+print("Results saved to results.csv and results.md")
